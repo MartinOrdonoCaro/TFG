@@ -20,6 +20,11 @@
         var lineChart = echarts.init(canvas);
 
         var option = {
+            dataZoom: [
+                {
+                    xAxisIndex: [0]
+                }
+            ],
             dataset: {source: serieData},
             xAxis: {
                 type: 'category'
