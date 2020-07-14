@@ -20,6 +20,15 @@
         var lineChart = echarts.init(canvas);
 
         var option = {
+            toolbox: {
+                show: true,
+                feature: {
+                    saveAsImage: {
+                        show: true,
+                        title: "Guardar como imagen"
+                    }
+                }
+            },
             dataset: {source: serieData},
             xAxis: {
                 type: 'category'
