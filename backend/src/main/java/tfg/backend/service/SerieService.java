@@ -4,6 +4,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import tfg.backend.domain.Dato;
@@ -29,8 +30,8 @@ public class SerieService {
     @Autowired
     private SerieRepository serieRepository;
 
-    public List<Serie> findAll(){ 
-        return this.serieRepository.findAll();
+    public Page<Serie> findAll(Pageable pageable){
+        return this.serieRepository.findAll(pageable);
     }
 
     public Serie findById(Long id) {
@@ -48,7 +49,7 @@ public class SerieService {
         JSONObject cesta = new JSONObject(tokener);
         JSONArray datos = cesta.getJSONArray("datos");
         int i;
-        for(i = 0; i < 1/*datos.length()*/; i++){
+        for(i = 0; i < datos.length(); i++){
             JSONObject serieJson =  datos.getJSONObject(i);
             JSONObject indicador = serieJson.getJSONObject("indicador");
             String codigo = indicador.getString("codigo");
@@ -65,7 +66,7 @@ public class SerieService {
             serie.setNombreFuente(serieJson.getJSONObject("fuente").getJSONObject("fte_id_organismo").getString("org_nombre"));
             serie.setSiglasFuente(serieJson.getJSONObject("fuente").getJSONObject("fte_id_organismo").getString("org_siglas"));
 
-            serie.setDatos(new HashSet<Dato>());
+            Set<Dato> valores = new HashSet<>();
 
 
             for (int n=0; n<datosSerie.length(); n++){
@@ -75,12 +76,14 @@ public class SerieService {
                 dato.setPeriodo(datosSerie.getJSONObject(n).getString("dat_periodo"));
                 dato.setValor(datosSerie.getJSONObject(n).getFloat("dat_dato"));
 
-                serie.getDatos().add(dato);
+                valores.add(dato);
             }
+            serie.setDatos(valores);
+
             this.serieRepository.save(serie);
             System.out.println(serie.toString());
         }
 
-        return "Se han insertado "+String.valueOf(i)+" serie/s";
+        return "Se han insertado "+ i +" serie/s";
     }
 }

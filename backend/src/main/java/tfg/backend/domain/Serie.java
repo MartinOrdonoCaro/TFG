@@ -24,7 +24,6 @@ public class Serie implements Serializable {
     private String descripcion;
     private String periodicidad;
     private String ruta;
-    private String fuente;
     private LocalDate inicioPeriodo;
     private LocalDate finPeriodo;
     private String nombreFuente;

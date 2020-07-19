@@ -1,6 +1,9 @@
 package tfg.backend.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,8 +31,9 @@ public class SerieController {
 
     @CrossOrigin(origins = "http://localhost:5000")
     @GetMapping
-    public List<Serie> findAll(){
-        return serieService.findAll();
+    public ResponseEntity<List<Serie>> findAll(Integer page){
+        Pageable pageable = PageRequest.of(page, 5);
+        return ResponseEntity.ok(serieService.findAll(pageable).getContent());
     }
 
     @CrossOrigin(origins = "http://localhost:5000")
