@@ -6,85 +6,57 @@
 	import { onMount, beforeUpdate } from 'svelte';
 	import echarts from 'echarts';
 	import LineChart from './components/LineChart.svelte';
+	import DataTable from './components/DataTable.svelte';
 
 	$: loading = true;
 	$: mostrar = false;
 	$: selected = [];
-	$: page = 0;
+	let page = 0;
+	let totalPages = 0;
 	let series = [];
 	
-	onMount(async function getData() {
+	onMount(async () => {
 		const response = await self.fetch('http://localhost:8080/serie?page='+page);
-		series = await response.json();
+		const jsonResponse = await response.json();
+		series = jsonResponse.content;
+		totalPages = jsonResponse.totalPages;
 		loading = false;
 	});
 
-	function handleMostrar(id, descripcion){
-		selected.push({id: id, label: descripcion});
+	function handleMostrar(id){
+		selected.push(id);
 		mostrar = true;
 	}
 
-	function handlePage(number){
-		page = page + number
+	async function handlePage(number){
+		loading = true
+		page = page + number;
+		const response = await self.fetch('http://localhost:8080/serie?page='+page);
+		const jsonResponse = await response.json();
+		series = jsonResponse.content;
+		totalPages = jsonResponse.totalPages;
+		loading = false;
 	}
 	
 </script>
 
-<style>
-	table {
-		border-collapse: collapse;
-		border-spacing: 0;
-		empty-cells: show;
-	}
-	table th {
-		background-color: #eee;
-	}
-	table th, table td {
-		padding: 5px;
-	}
-	table tr.odd {
-		background-color: #eee;
-	}
-</style>
-
 
 {#if loading}
-<h3>Loading...</h3>
+	<h3>Loading...</h3>
 {:else}
-<table>
-	<tr>
-		<th>Código</th>
-		<th>Descripción</th>
-		<th>Fuente</th>
-		<th>Datos</th>
-	</tr>
-	{#each series as serie, i (i)}
-		<tr class:odd={i%2}>
-			<td>{serie.codigo}</td>
-			<td>{serie.descripcion}</td>
-			<td>{serie.siglasFuente}</td>
-			{#if serie.datos}
-				<td>{serie.datos.length}</td>
-			{:else}
-				<td>0</td>
-			{/if}
-			<td>
-				<button on:click={handleMostrar(serie.id, serie.descripcion)}>
-					Mostrar
-				</button>
-			</td>
-		</tr>
-	{/each}
-</table>
-<button on:click={page=page-1} disabled={page < 1}>
-	Anterior
-</button>
-<button on:click={page=page+1}>
-	Siguiente
-</button>
+	<svelte:component this={DataTable} bind:selected={selected} bind:series={series} />
+	<div>
+	<button on:click|preventDefault={() => handlePage(-1)} disabled={page < 1}>
+		Anterior
+	</button>
+	<button on:click|preventDefault={() => handlePage(1)} disabled={totalPages-1 <= page}>
+		Siguiente
+	</button>
+	</div>
 {/if}
 
-{#if mostrar}
-	<LineChart series={selected}/>
+{#if selected}
+	<LineChart selected={selected}/>
 {/if}
 page = {page}
+total page = {totalPages}
