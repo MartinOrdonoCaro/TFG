@@ -8,9 +8,9 @@
 	import LineChart from './components/LineChart.svelte';
 	import DataTable from './components/DataTable.svelte';
 
-	$: loading = true;
-	$: mostrar = false;
-	$: selected = [];
+	let loading = true;
+	let selected = [];
+	let chart;
 	let page = 0;
 	let totalPages = 0;
 	let series = [];
@@ -22,11 +22,6 @@
 		totalPages = jsonResponse.totalPages;
 		loading = false;
 	});
-
-	function handleMostrar(id){
-		selected.push(id);
-		mostrar = true;
-	}
 
 	async function handlePage(number){
 		loading = true
@@ -55,8 +50,7 @@
 	</div>
 {/if}
 
-{#if selected}
-	<LineChart selected={selected}/>
-{/if}
+<LineChart bind:selected={selected}/>
 page = {page}
 total page = {totalPages}
+selected = {selected}
