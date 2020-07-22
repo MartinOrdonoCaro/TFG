@@ -3,15 +3,49 @@
 </svelte:head>
 
 <script>
-	import { onMount, beforeUpdate } from 'svelte';
+	import { onMount, beforeUpdate, afterUpdate } from 'svelte';
 	import echarts from 'echarts';
+	import LineChart from './LineChart.svelte';
 
-	export let selected = [];
-	export let series = [];
-	let totalPages = 0;
+	let selected = [];
+	export let page;
+	export let totalPages;
+	let currentPage;
+	let series = [];
+	let loading = true;
+
+	beforeUpdate(() => {
+		console.log("updating data"+page)
+		if(currentPage != page){
+			loading = true;
+			fetch('http://localhost:8080/serie?page='+page)
+					.then(response => response.json())
+					.then(jsonData => {	
+						series = jsonData.content;
+						if(totalPages != jsonData.totalPages){
+							totalPages = jsonData.totalPages;
+						}
+					}).then(loading = false);
+		}
+	});
+
+	afterUpdate(() => {
+		currentPage = page;
+		console.log("cargada pagina " + currentPage);
+	});
+
+	function handlePage(number){
+		page = page + number;
+	}
 
 	function handleMostrar(id){
-		selected.push(id);
+		if(selected.includes(id)){
+			selected.splice(selected.indexOf(id), 1);
+		}
+		else {
+			selected.push(id);
+		}
+		selected = selected;
 	}
 	
 </script>
@@ -35,7 +69,9 @@
 </style>
 
 
-
+{#if loading}
+	<h3>Loading...</h3>
+{:else}
 <div>
 	<table>
 		<tr>
@@ -69,4 +105,20 @@
 			</tr>
 		{/each}
 	</table>
-	</div>
+</div>
+<div>
+	<button on:click|preventDefault={() => handlePage(-1)} disabled={page < 1}>
+		Anterior
+	</button>
+	<button on:click|preventDefault={() => handlePage(1)} disabled={totalPages-1 <= page}>
+		Siguiente
+	</button>
+</div>
+{/if}
+<div>
+	<LineChart bind:selected={selected}/>
+</div>
+
+page = {page}
+total page = {totalPages}
+selected = {selected}

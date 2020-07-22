@@ -1,84 +1,83 @@
 <script>
-	import { onMount } from 'svelte';
+	import { onMount, beforeUpdate } from 'svelte';
     import echarts from 'echarts';
     
     export let selected;
-    let series = [];
-    $: loading = true;
     let periodicidad;
     let canvas;
+    let lineChart;
 
-	onMount(async function() {
-        const response = await self.fetch('http://localhost:8080/serie/find-all-by-id?ids='+selected);
-        series = await response.json().content;
-        const source = [];
-        const serieInfo = [];
-        for(const serie of series){
-            const serieData = [];
-            const yData = ["serie"];
-            const xData = [serie.descripcion];
+    onMount(function() {
+        lineChart = echarts.init(canvas);
+    });
 
-            serie.datos.forEach(element => {
-                serieData.push([element.anio + element.periodo, element.valor]);
-            });
-            serieData.sort();
+	beforeUpdate(async function() {
+        let periodos = [];
+        const series = [];
+        lineChart.clear();
+        if(selected.length > 0) {
+            const response = await self.fetch('http://localhost:8080/serie/find-all-by-id?ids='+selected)//1,2,3,4,5')//+selected)
+                .then(response => response.json())
+                .then(jsonData => {
+                    for(const serie of jsonData){
+                        const serieData = [];
+                        const yData = [];
+                        const xData = [];
 
-            serieData.forEach(dupla => {
-                yData.push(dupla[0]);
-                xData.push(dupla[1]);
-            });
-                
-            if (!source.length) {
-                source.push(yData);
-            };
+                        serie.datos.forEach(element => {
+                            serieData.push([element.anio + " " + element.periodo, element.valor]);
+                        });
+                        serieData.sort();
 
-            source.push(xData);
+                        serieData.forEach(dupla => {
+                            yData.push(dupla[0]);
+                            xData.push(dupla[1]);
+                        });
+                        
+                        if (periodos.length < 1) {
+                            periodos = yData;
+                        };
+                        series.push({
+                            type: 'line',
+                            name: serie.descripcion,
+                            data: xData
+                        })
+                    };
+                });
+            
 
-            console.log(source);
+
             console.log("fin");
 
-            
-            
-
-        };
-
-        
-        var lineChart = echarts.init(canvas);
-
-        var option = {
-            legend: {
-                data: [series[0].label]
-            },
-            dataZoom: [
-                {
-                    xAxisIndex: [0]
-                }
-            ],
-            toolbox: {
-                feature: {
-                    dataView: {
-                        show: true
+            var option = {
+                legend: {
+                },
+                dataZoom: [
+                    {
+                        xAxisIndex: [0]
                     }
-                }
-            },
-            dataset: {source: serieData},
-            xAxis: {
-                type: 'category'
-            },
-            yAxis: {},
-            series: [
-                {
-                    name: series[0].label,
-                    type: 'line'
-                }
-            ]
-        };
-        lineChart.setOption(option);
-
-        loading = false;
-	});
+                ],
+                toolbox: {
+                    feature: {
+                        dataView: {
+                            show: true
+                        },
+                        saveAsImage: {
+                            show: true
+                        }
+                    }
+                },
+                xAxis: {
+                    type: 'category',
+                    data: periodos
+                },
+                yAxis: {},
+                series: series
+            };
+            lineChart.setOption(option);
+        }
+    });
 </script>
-
 
 <div>
 	<canvas
