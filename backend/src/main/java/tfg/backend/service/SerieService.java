@@ -34,6 +34,10 @@ public class SerieService {
         return this.serieRepository.findAll(pageable);
     }
 
+    public List<Serie> findAllById(List<Long> id){
+        return (List<Serie>) this.serieRepository.findAllById(id);
+    }
+
     public Serie findById(Long id) {
         return this.serieRepository.findById(id).get();
     }

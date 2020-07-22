@@ -31,14 +31,20 @@ public class SerieController {
 
     @CrossOrigin(origins = "http://localhost:5000")
     @GetMapping
-    public ResponseEntity<List<Serie>> findAll(Integer page){
+    public ResponseEntity<Page<Serie>> findAll(Integer page){
         Pageable pageable = PageRequest.of(page, 5);
-        return ResponseEntity.ok(serieService.findAll(pageable).getContent());
+        return ResponseEntity.ok(serieService.findAll(pageable));
     }
 
     @CrossOrigin(origins = "http://localhost:5000")
     @GetMapping("/{id}")
     public Serie findById(@PathVariable Long id){
         return serieService.findById(id);
+    }
+
+    @CrossOrigin(origins = "http://localhost:5000")
+    @GetMapping("/find-all-by-id")
+    public ResponseEntity<List<Serie>> findAllById(@RequestParam List<Long> ids){
+        return ResponseEntity.ok(serieService.findAllById(ids));
     }
 }
