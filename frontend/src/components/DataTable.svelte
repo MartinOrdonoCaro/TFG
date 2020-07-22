@@ -78,7 +78,8 @@
 			<th>Código</th>
 			<th>Descripción</th>
 			<th>Fuente</th>
-			<th>Datos</th>
+			<th>Nº de Datos</th>
+			<th>Periodicidad</th>
 		</tr>
 		{#each series as serie, i (i)}
 			<tr class:odd={i%2}>
@@ -90,6 +91,7 @@
 				{:else}
 					<td>0</td>
 				{/if}
+				<td>{serie.periodicidad}</td>
 				<td>
 					{#if selected.includes(serie.id)}
 						<button on:click={() => handleMostrar(serie.id)}>
