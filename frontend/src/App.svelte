@@ -3,9 +3,7 @@
 </svelte:head>
 
 <script>
-	import DataTable from './components/DataTable.svelte';
-
-	
+  import DataTable from './components/DataTable.svelte';
 </script>
 
 

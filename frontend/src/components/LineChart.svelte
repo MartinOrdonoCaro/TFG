@@ -14,9 +14,11 @@
 	beforeUpdate(async function() {
         let periodos = [];
         const series = [];
-        lineChart.clear();
+        if(lineChart){
+            lineChart.clear();
+        };
         if(selected.length > 0) {
-            const response = await self.fetch('http://localhost:8080/serie/find-all-by-id?ids='+selected)//1,2,3,4,5')//+selected)
+            const response = await self.fetch('http://localhost:8080/serie/find-all-by-id?ids='+selected)
                 .then(response => response.json())
                 .then(jsonData => {
                     for(const serie of jsonData){
