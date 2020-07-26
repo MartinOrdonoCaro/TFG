@@ -18,38 +18,30 @@
             lineChart.clear();
         };
         if(selected.length > 0) {
-            const response = await self.fetch('http://localhost:8080/serie/find-all-by-id?ids='+selected)
-                .then(response => response.json())
-                .then(jsonData => {
-                    for(const serie of jsonData){
-                        const serieData = [];
-                        const yData = [];
-                        const xData = [];
+            for(const serie of selected){
+                const serieData = [];
+                const yData = [];
+                const xData = [];
 
-                        serie.datos.forEach(element => {
-                            serieData.push([element.anio + " " + element.periodo, element.valor]);
-                        });
-                        serieData.sort();
-
-                        serieData.forEach(dupla => {
-                            yData.push(dupla[0]);
-                            xData.push(dupla[1]);
-                        });
-                        
-                        if (periodos.length < 1) {
-                            periodos = yData;
-                        };
-                        series.push({
-                            type: 'line',
-                            name: serie.descripcion,
-                            data: xData
-                        })
-                    };
+                serie.datos.forEach(element => {
+                    serieData.push([element.anio + " " + element.periodo, element.valor]);
                 });
-            
+                serieData.sort();
 
-
-            console.log("fin");
+                serieData.forEach(dupla => {
+                    yData.push(dupla[0]);
+                    xData.push(dupla[1]);
+                });
+                            
+                if (periodos.length < 1) {
+                    periodos = yData;
+                };
+                series.push({
+                    type: 'line',
+                    name: serie.descripcion,
+                    data: xData
+                })
+            };
 
             var option = {
                 legend: {

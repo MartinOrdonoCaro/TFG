@@ -18,11 +18,7 @@
 	
 	export let page;
 
-	let selected = {
-		"ids": [],
-		"codigos": []
-	};
-	let checkbox = [];
+	let selected = [];
 	let excel = false;
 	let grafica = false;
 	let totalPages;
@@ -45,7 +41,6 @@
 
 	afterUpdate(() => {
 		currentPage = page;
-		checkbox = selected.ids;
 	});
 
 	function handlePage(number){
@@ -53,22 +48,32 @@
 		page = page + number;
 	}
 
-	function handleSelect(id){
-		var codigo = series.find(serie => {
-			return serie.id === id;
-		}).codigo;
-		
-		if(selected.ids.includes(id)){
-			selected.ids.splice(selected.ids.indexOf(id), 1);
-			selected.codigos.splice(selected.codigos.indexOf(codigo), 1);
+	function handleSelect(serie){		
+		if(isSelected(serie)){
+			selected.splice(getIndexSelected(serie), 1);
 		}
 		else {
-			selected.ids.push(id);
-			selected.codigos.push(codigo);
+			selected.push(serie);
 		}
 		selected = selected;
 	}
 
+	function isSelected(serie){
+		if(selected.find(item => item.id === serie.id)){
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	function getIndexSelected(serie){
+		const selectedSerie = selected.find(item => item.id === serie.id);
+		if(selectedSerie){
+			return selected.indexOf(selectedSerie);
+		} else {
+			return false;
+		}
+	}
 	function handleReset(){
 		excel = grafica = false;
 	}
@@ -104,21 +109,9 @@
 						<Cell>0</Cell>
 					{/if}
 					<Cell>{serie.periodicidad}</Cell>
-					<!-- <Cell>
-						{#if selected.ids.includes(serie.id)}
-							<Button on:click={() => handleSelect(serie.id)}>
-								Quitar
-							</Button>
-						{:else}
-							<Button on:click={() => handleSelect(serie.id)}>
-								Mostrar
-							</Button>
-						{/if}
-
-					</Cell> -->
 
 					<Cell checkbox>
-                		<Checkbox on:click={() => handleSelect(serie.id)} checked={selected.ids.includes(serie.id)}/>
+                		<Checkbox on:click={() => handleSelect(serie)} checked={isSelected(serie)}/>
               		</Cell>
 				</Row>
 			{/each}
@@ -134,30 +127,11 @@
 		<Button variant="raised" on:click={() => handlePage(-1)} disabled={page < 1}>
 			&#60; Anterior
 		</Button>
-		<!-- {#if page > 0}
-			<Button variant="raised" on:click={() => handlePage(-1)}>
-				{page-1}
-			</Button>
-		{/if}
-		{#if page > 1}
-			<Button variant="raised" on:click={() => handlePage(-page)}>
-				{0}
-			</Button>
-		{/if} -->
+		
 		<Button variant="outlined" disabled=true>
 			{page}
 		</Button>
-		<!-- {#if page < totalPages-1}
-			<Button variant="raised" on:click={() => handlePage(+1)}>
-				{page+1}
-			</Button>
-		{/if}
-		{#if page < totalPages-1}
-			<Button variant="text" disabld={true}>...</Button>
-			<Button variant="raised" on:click={() => handlePage(totalPages-1-page)}>
-				{totalPages-1}
-			</Button>
-		{/if} -->
+		
 		<Button variant="raised" on:click={() => handlePage(1)} disabled={totalPages-1 <= page}>
 			<Label>Siguiente ></Label>
 		</Button>
@@ -171,17 +145,17 @@
 
 	<Content>
 	
-	<Button variant="raised" on:click={() => excel = true} disabled={selected.ids.length < 1 }>
+	<Button variant="raised" on:click={() => excel = true} disabled={selected.length < 1 }>
 		Ver datos en Excel
 	</Button>
 	
-	<Button variant="raised" on:click={() => grafica = true} disabled={selected.ids.length < 1 }>
+	<Button variant="raised" on:click={() => grafica = true} disabled={selected.length < 1 }>
 		Ver datos en Gráfica
 	</Button>
 
 
-	<Set chips={selected.codigos} let:chip input>
-  		<Chip ><Text>{chip}</Text></Chip>
+	<Set chips={selected} let:chip input>
+  		<Chip ><Text>{chip.codigo}</Text></Chip>
 	</Set>
 	</Content>
 	
@@ -191,12 +165,12 @@
 {:else}
 <Paper>
 	{#if grafica}
-		<LineChart bind:selected={selected.ids}/>
+		<LineChart bind:selected={selected}/>
 	{:else if excel}
 		<Button variant="raised" on:click={() => handleReset()}>
 			Volver
 		</Button>
-		<ExcelTableWrapper selected={selected.ids}/>
+		<ExcelTableWrapper selected={selected}/>
 	{/if}
 	<Button variant="raised" on:click={() => handleReset()}>
 		Volver
