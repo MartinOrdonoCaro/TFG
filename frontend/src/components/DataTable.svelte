@@ -98,23 +98,29 @@
 				</Row>
 			</Head>
 			<Body>
-			{#each series as serie, i (i)}
-				<Row>
-					<Cell>{serie.codigo}</Cell>
-					<Cell>{serie.descripcion}</Cell>
-					<Cell>{serie.siglasFuente}</Cell>
-					{#if serie.datos}
-						<Cell>{serie.datos.length}</Cell>
-					{:else}
-						<Cell>0</Cell>
-					{/if}
-					<Cell>{serie.periodicidad}</Cell>
+				{#if series.length}
+					{#each series as serie, i (i)}
+						<Row>
+							<Cell>{serie.codigo}</Cell>
+							<Cell>{serie.descripcion}</Cell>
+							<Cell>{serie.siglasFuente}</Cell>
+							{#if serie.datos}
+								<Cell>{serie.datos.length}</Cell>
+							{:else}
+								<Cell>0</Cell>
+							{/if}
+							<Cell>{serie.periodicidad}</Cell>
 
-					<Cell checkbox>
-                		<Checkbox on:click={() => handleSelect(serie)} checked={isSelected(serie)}/>
-              		</Cell>
-				</Row>
-			{/each}
+							<Cell checkbox>
+								<Checkbox on:click={() => handleSelect(serie)} checked={isSelected(serie)}/>
+							</Cell>
+						</Row>
+					{/each}
+				{:else}
+					<Row>
+						<Cell><h3>No se encontraron resultados</h3></Cell>
+					</Row>
+				{/if}
 			</Body>
 		</DataTable>
 	</Content>
