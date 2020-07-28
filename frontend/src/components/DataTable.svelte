@@ -14,6 +14,7 @@
 	import { Router, Link, Route } from "svelte-routing";
 	import ExcelTableWrapper from "./../routes/ExcelTableWrapper.svelte";
 	import Checkbox from '@smui/checkbox';
+	import Select, {Option} from '@smui/select';
 	
 	
 	export let page;
@@ -24,11 +25,13 @@
 	let totalPages;
 	let currentPage;
 	let series = [];
+	let sizes = [5, 10, 15, 20];
+  	let sizeChoice = 5;
 
 	beforeUpdate(() => {
-		console.log("updating data"+page)
-		if(currentPage != page){
-			fetch('http://localhost:8080/serie?page='+page)
+		console.log("updating data: page " + page+ ", size: "+sizeChoice)
+		if(currentPage != page || (series.length != sizeChoice && page == totalPages)){
+			fetch('http://localhost:8080/serie?page=' + page + '&size='+ sizeChoice)
 					.then(response => response.json())
 					.then(jsonData => {	
 						series = jsonData.content;
@@ -44,8 +47,12 @@
 	});
 
 	function handlePage(number){
-		console.log("clicked");
 		page = page + number;
+	}
+
+	function handlePageSize(number){
+		sizeChoice = number;
+		page = 0;
 	}
 
 	function handleSelect(serie){		
@@ -126,7 +133,11 @@
 	</Content>
 	<br>
 	<Content>
-    	<Group>
+		<Select enhanced bind:value={sizeChoice} label="Numero de series">
+  			{#each sizes as size}
+   				<Option value={size} selected={sizeChoice === size} on:click={() => handlePageSize(size)}>{size}</Option>
+  			{/each}
+		</Select>
 		<Button variant="raised" on:click={() => handlePage(-page)} disabled={page < 1}>
 			&#171
 		</Button>
@@ -144,7 +155,6 @@
 		<Button variant="raised" on:click={() => handlePage(totalPages-1-page)} disabled={totalPages-1 <= page}>
 			&#187
 		</Button>
-		</Group>
 	</Content>
 
 	<br>

@@ -31,8 +31,8 @@ public class SerieController {
 
     @CrossOrigin(origins = "http://localhost:5000")
     @GetMapping
-    public ResponseEntity<Page<Serie>> findAll(Integer page){
-        Pageable pageable = PageRequest.of(page, 5);
+    public ResponseEntity<Page<Serie>> findAll(Integer page, Integer size){
+        Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(serieService.findAll(pageable));
     }
 

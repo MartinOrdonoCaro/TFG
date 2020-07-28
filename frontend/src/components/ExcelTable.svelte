@@ -56,7 +56,7 @@ loading...
 				<Head>
 					<Row>
 						<Cell>Fecha</Cell>
-						<Cell>Territorio</Cell>
+						<!-- <Cell>Territorio</Cell> -->
 						{#each selected as serie, i (i)}
 							<Cell>{serie.descripcion}</Cell>
 						{/each}
@@ -70,7 +70,7 @@ loading...
 				{#each data as dato, i (i)}
 					<Row>
 						<Cell>{dato.fecha}</Cell>
-						<Cell>{dato.territorio}</Cell>	
+						<!-- <Cell>{dato.territorio}</Cell>	 -->
 						{#each dato.valores as valor, i (i)}
 							<Cell>{valor}</Cell>
 						{/each}
