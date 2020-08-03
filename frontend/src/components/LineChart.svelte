@@ -3,23 +3,17 @@
     import echarts from 'echarts';
     import Checkbox from '@smui/checkbox';
     import FormField from '@smui/form-field';
+    import ECharts from 'echarts-for-svelte';
+    import infographic from 'echarts/theme/infographic.js'
     
     export let selected;
     let periodicidad;
-    let canvas;
-    let lineChart;
-    let tendencias = false;
-
-    onMount(function() {
-        lineChart = echarts.init(canvas);
-    });
+    let option;
+    const style = "height:600px";
 
 	beforeUpdate(async function() {
         let periodos = [];
         const series = [];
-        if(lineChart){
-            lineChart.clear();
-        };
         if(selected.length > 0) {
             for(const serie of selected){
                 serie.datos.forEach(element => {
@@ -34,7 +28,6 @@
                 const serieData = [];
                 const yData = [];
                 const xData = [];
-                const tendencia = [];
 
                 serie.datos.forEach(element => {
                     serieData.push([element.anio + " " + element.periodo, element.valor]);
@@ -46,50 +39,25 @@
                     let found = false;
                     for(const dupla of serieData){
                         if (dupla[0] === periodo) {
-
-                            if (tendencia.length < 1) {
-                                tendencia.push(0);
-                            } else {
-                                console.log("valor: "+dupla[1]);
-                                console.log("anterior: "+xData[lastData]);
-                                console.log("lectura "+lastData);
-                                tendencia.push(dupla[1]-lastData);
-                            };
-
-                            xData.push(dupla[1]);             
-                            lastData = dupla[1];
+                            xData.push(dupla[1]);  
                             found = true;
                         };
                     };
                     if(!found){
                         xData.push(null);
-                        tendencia.push(null);
                     };
                 };
                 
                 series.push({
                     type: 'line',
-                    name: serie.descripcion,
+                    name: serie.descripcion.split(".")[0],
                     data: xData,
                     symbolSize: 6,
                     connectNulls: true
                 });
-                if(tendencias){
-                    series.push({
-                        type: 'line',
-                        name: "Tendencia: " + (selected.indexOf(serie)+1),
-                        data: tendencia,
-                        symbol: "triangle",
-                        symbolSize: 6,
-                        itemStyle: {
-                            color: '#808080'
-                        },
-                        connectNulls: true
-                    });
-                };
             };
 
-            var option = {
+            option = {
                 legend: {},
                 dataZoom: [
                     {
@@ -104,14 +72,10 @@
                     }
                 },
                 tooltip: {
-                    trigger: 'item',
-                    axisPointer: {
-                        type: 'cross'
-                    }
+                    trigger: 'axis'
                 },
                 xAxis: {
                     type: 'category',
-                    boundaryGap: false,
                     data: periodos
                 },
                 yAxis: {
@@ -119,21 +83,11 @@
                 },
                 series: series
             };
-            lineChart.setOption(option);
         }
     });
 </script>
-
 <div>
-    <FormField>
-    <Checkbox bind:checked={tendencias} />
-    <span slot="label">Mostrar tendencias.</span>
-    </FormField>
-</div>
-<div>
-	<canvas
-		bind:this={canvas}
-		width={1500}
-		height={560}
+	<ECharts
+		{echarts} {option} style={style}
 	/>
 </div>

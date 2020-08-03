@@ -10,11 +10,13 @@
 	import Button, { Group, Label }from '@smui/button';
 	import DataTable, {Head, Body, Row, Cell} from '@smui/data-table';
 	import Paper, {Title, Subtitle, Content} from '@smui/paper';
-	import Chip, {Set, Icon, Text} from '@smui/chips';
+	import Chip, {Set, Text} from '@smui/chips';
 	import { Router, Link, Route } from "svelte-routing";
 	import ExcelTableWrapper from "./../routes/ExcelTableWrapper.svelte";
 	import Checkbox from '@smui/checkbox';
 	import Select, {Option} from '@smui/select';
+	import Textfield from '@smui/textfield'
+	import IconButton, {Icon} from '@smui/icon-button';
 	
 	
 	export let page;
@@ -22,16 +24,44 @@
 	let selected = [];
 	let excel = false;
 	let grafica = false;
+	let query = true;
 	let totalPages;
 	let currentPage;
 	let series = [];
 	let sizes = [5, 10, 15, 20];
-  	let sizeChoice = 5;
+	const params = {
+		pageSize: 5,
+		keyword: "",
+		fuente: "",
+		periodicidad: "",
+		territorio: "",
+		tasa: ""
+	};
+	const filterOptions = {
+		territorio: [],
+		periodicidad: [],
+		fuente: []
+	}
 
+	onMount(() => {
+		fetch('http://localhost:8080/serie/filtro')
+					.then(response => response.json())
+					.then(jsonData => {	
+						filterOptions.territorio = jsonData.territorios;
+						filterOptions.periodicidad = jsonData.periodos;
+						filterOptions.fuente = jsonData.fuentes;
+					});
+	});
 	beforeUpdate(() => {
-		console.log("updating data: page " + page+ ", size: "+sizeChoice)
-		if(currentPage != page || (series.length != sizeChoice && page == totalPages)){
-			fetch('http://localhost:8080/serie?page=' + page + '&size='+ sizeChoice)
+		console.log("updating data: page " + page+ ", size: "+params.pageSize)
+		
+		if(query){
+			var url = new URL('http://localhost:8080/serie');
+			var urlSearch = new URLSearchParams(params);
+			urlSearch.append("page", page);
+			url.search = urlSearch.toString();
+			console.log(url);
+			fetch(url)
 					.then(response => response.json())
 					.then(jsonData => {	
 						series = jsonData.content;
@@ -39,6 +69,7 @@
 							totalPages = jsonData.totalPages;
 						}
 					});
+			query = false;
 		}
 	});
 
@@ -48,11 +79,14 @@
 
 	function handlePage(number){
 		page = page + number;
+		query = true;
 	}
 
 	function handlePageSize(number){
-		sizeChoice = number;
+		params.pageSize = number;
 		page = 0;
+		series = [];
+		query = true;
 	}
 
 	function handleSelect(serie){		
@@ -81,8 +115,15 @@
 			return false;
 		}
 	}
+
 	function handleReset(){
 		excel = grafica = false;
+	}
+
+	function handleFilter(){
+		page = 0;
+		series = [];
+		query = true;
 	}
 	
 </script>
@@ -90,8 +131,40 @@
 {#if !excel && !grafica}
 <Paper>
 	<Title>Listado de series</Title>
+	
 	<Content>
-		<DataTable table$aria-label="Series" >
+		<Textfield variant="filled" bind:value={params.keyword} label="Palabra clave" />
+		
+		<Select variant="filled" enhanced bind:value={params.fuente} label="Fuente" class="demo-select-width" menu$class="demo-select-width">
+			<Option value=""></Option>
+			{#each filterOptions.fuente as fuente}
+				<Option value={fuente} selected={params.fuente === fuente}>{fuente}</Option>
+			{/each}
+		</Select>
+
+		<Select variant="filled" enhanced bind:value={params.periodicidad} label="Periodicidad" class="demo-select-width" menu$class="demo-select-width">
+			<Option value=""></Option>
+			{#each filterOptions.periodicidad as periodo}
+				<Option value={periodo} selected={() => params.periodicidad === periodo}>{periodo}</Option>
+			{/each}
+		</Select>
+
+		<Select variant="filled" enhanced bind:value={params.territorio} label="Territorio" class="demo-select-width" menu$class="demo-select-width">
+			<Option value=""></Option>
+			{#each filterOptions.territorio as territorio}
+				<Option value={territorio} selected={params.territorio === territorio}>{territorio}</Option>
+			{/each}
+		</Select>
+		
+		<Button variant="filled" on:click={() => handleFilter()} >
+			Filtrar
+		</Button>
+	</Content>
+
+	<br>
+
+	<Content>
+		<DataTable table$aria-label="Series" style="width: 100%">
 			<Head>
 				<Row>
 					<Cell>Código</Cell>
@@ -99,9 +172,9 @@
 					<Cell>Fuente</Cell>
 					<Cell>Nº de Datos</Cell>
 					<Cell>Periodicidad</Cell>
-					<Cell checkbox>
-						<Checkbox disabled={true} indeterminate={true}} />
-					</Cell>
+					<Cell>Tasa (unidad)</Cell>
+					<Cell>Territorio</Cell>
+					<Cell>Selección</Cell>
 				</Row>
 			</Head>
 			<Body>
@@ -110,13 +183,18 @@
 						<Row>
 							<Cell>{serie.codigo}</Cell>
 							<Cell>{serie.descripcion}</Cell>
-							<Cell>{serie.siglasFuente}</Cell>
+
+							<Cell>{serie.nombreFuente} ({serie.siglasFuente})</Cell>
+
 							{#if serie.datos}
 								<Cell>{serie.datos.length}</Cell>
 							{:else}
 								<Cell>0</Cell>
 							{/if}
+
 							<Cell>{serie.periodicidad}</Cell>
+							<Cell>{serie.tasa} ({serie.unidad})</Cell>
+							<Cell>{serie.territorio}</Cell>
 
 							<Cell checkbox>
 								<Checkbox on:click={() => handleSelect(serie)} checked={isSelected(serie)}/>
@@ -133,9 +211,9 @@
 	</Content>
 	<br>
 	<Content>
-		<Select enhanced bind:value={sizeChoice} label="Numero de series">
+		<Select enhanced bind:value={params.pageSize} label="Numero de series">
   			{#each sizes as size}
-   				<Option value={size} selected={sizeChoice === size} on:click={() => handlePageSize(size)}>{size}</Option>
+   				<Option value={size} selected={params.pageSize === size} on:click={() => handlePageSize(size)}>{size}</Option>
   			{/each}
 		</Select>
 		<Button variant="raised" on:click={() => handlePage(-page)} disabled={page < 1}>
@@ -156,7 +234,6 @@
 			&#187
 		</Button>
 	</Content>
-
 	<br>
 
 	<Content>
@@ -168,11 +245,17 @@
 	<Button variant="raised" on:click={() => grafica = true} disabled={selected.length < 1 }>
 		Ver datos en Gráfica
 	</Button>
+	</Content>
+
+	<br>
+
+	<Content>
 
 
 	<Set chips={selected} let:chip input>
-  		<Chip ><Text>{chip.codigo}</Text></Chip>
+  		<Chip><Text>{chip.codigo}</Text></Chip>
 	</Set>
+
 	</Content>
 	
 </Paper>
