@@ -19,14 +19,14 @@ public class Serie implements Serializable {
     private static final long serialVersionUID = 1723039391417629631L;
 
     @Id
-    private Long id;
+    private String id;
     private String codigo;
+    private String tasa;
+    private String unidad;
     private String descripcion;
-    private String periodicidad;
-    private String ruta;
-    private LocalDate inicioPeriodo;
-    private LocalDate finPeriodo;
     private String nombreFuente;
     private String siglasFuente;
+    private String territorio;
+    private String periodicidad;
     private Set<Dato> datos;
 }

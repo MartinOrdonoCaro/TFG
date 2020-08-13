@@ -50,7 +50,7 @@
                 
                 series.push({
                     type: 'line',
-                    name: serie.descripcion.split(".")[0],
+                    name: serie.descripcion,
                     data: xData,
                     symbolSize: 6,
                     connectNulls: true

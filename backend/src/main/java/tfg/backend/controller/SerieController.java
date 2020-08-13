@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import tfg.backend.dto.Filtro;
 import tfg.backend.domain.Serie;
 import tfg.backend.service.SerieService;
 
@@ -31,9 +32,9 @@ public class SerieController {
 
     @CrossOrigin(origins = "http://localhost:5000")
     @GetMapping
-    public ResponseEntity<Page<Serie>> findAll(Integer page, Integer size){
-        Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(serieService.findAll(pageable));
+    public ResponseEntity<Page<Serie>> findAll(Integer page, Integer pageSize, String keyword, String fuente, String periodicidad, String territorio, String tasa){
+        Pageable pageable = PageRequest.of(page, pageSize);
+        return ResponseEntity.ok(serieService.findAll(pageable, keyword, fuente, periodicidad, territorio, tasa));
     }
 
     @CrossOrigin(origins = "http://localhost:5000")
@@ -46,5 +47,11 @@ public class SerieController {
     @GetMapping("/find-all-by-id")
     public ResponseEntity<List<Serie>> findAllById(@RequestParam List<Long> ids){
         return ResponseEntity.ok(serieService.findAllById(ids));
+    }
+
+    @CrossOrigin(origins = "http://localhost:5000")
+    @GetMapping("/filtro")
+    public ResponseEntity<Filtro> getFiltro(){
+        return ResponseEntity.ok(serieService.getFiltro());
     }
 }

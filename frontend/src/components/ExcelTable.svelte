@@ -2,6 +2,8 @@
 	import { onMount, beforeUpdate } from 'svelte';
 	import DataTable, {Head, Body, Row, Cell} from '@smui/data-table';
 	import Paper, {Title, Subtitle, Content} from '@smui/paper';
+	import { csvGenerator } from "./csvGenerator";
+	import Button, { Label } from '@smui/button';
     
     export let selected;
 	let data = [];
@@ -43,7 +45,24 @@
 			data.sort((a,b) => (a.fecha > b.fecha) ? 1 : ((b.fecha > a.fecha) ? -1 : 0)); 
 			loading = false;
         }
-    });
+	});
+
+	function downloadHandler() {
+		let tableData = [];
+		let tableKeys = ['Fecha']
+		for(const serie of selected){
+			tableKeys.push(serie.descripcion)
+		}
+		for(const item of data) {
+			var row = {"Fecha": item.fecha}
+			for(const serie of selected){
+				row[serie.descripcion] = item.valores[selected.indexOf(serie)]
+			}
+			tableData.push(row)
+		}
+		
+		csvGenerator(tableData, "tableHeader", true);
+	}
 </script>
 
 {#if loading}
@@ -51,6 +70,11 @@ loading...
 {:else}
 	<Paper>
 		<Title>Datos</Title>
+		<Content>
+			<Button variant="outlined" on:click={downloadHandler}>
+				<Label>Descargar Excel</Label>
+			</Button>
+		</Content>
 		<Content>
 			<DataTable table$aria-label="Series" >
 				<Head>
@@ -60,10 +84,6 @@ loading...
 						{#each selected as serie, i (i)}
 							<Cell>{serie.descripcion}</Cell>
 						{/each}
-						
-						{#if selected.length == 2}
-							<Cell>Diferencia</Cell>
-						{/if}
 					</Row>
 				</Head>
 				<Body>
@@ -74,13 +94,16 @@ loading...
 						{#each dato.valores as valor, i (i)}
 							<Cell>{valor}</Cell>
 						{/each}
-						{#if dato.valores.length == 2}
-							<Cell>{dato.valores[0] - dato.valores[1]}</Cell>
-						{/if}
 					</Row>
 					{/each}
 				</Body>
 			</DataTable>
+		</Content>
+		<Content>
+			
+			<Button variant="outlined" on:click={downloadHandler}>
+				<Label>Descargar Excel</Label>
+			</Button>
 		</Content>
 	</Paper>
 {/if}
