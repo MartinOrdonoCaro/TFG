@@ -21,5 +21,4 @@ public class Dato implements Serializable {
     private String anio;
     private String periodo;
     private Float valor;
-    private Serie serie;
 }

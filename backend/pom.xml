@@ -60,6 +60,20 @@
 			</exclusions>
 		</dependency>
 
+		<dependency>
+			<groupId>edu.uci.ics</groupId>
+			<artifactId>crawler4j</artifactId>
+			<version>4.4.0</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/net.sf.mpxj/mpxj -->
+		<dependency>
+			<groupId>net.sf.mpxj</groupId>
+			<artifactId>mpxj</artifactId>
+			<version>5.1.4</version>
+		</dependency>
+
+
 		<!-- https://mvnrepository.com/artifact/org.json/json -->
 		<dependency>
 			<groupId>org.json</groupId>

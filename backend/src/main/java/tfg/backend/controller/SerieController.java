@@ -30,6 +30,11 @@ public class SerieController {
         return new ResponseEntity<>(serieService.importFromCesta(), HttpStatus.OK);
     }
 
+    @PostMapping("/importFromMineco")
+    public ResponseEntity<String> importFromMineco() throws Exception {
+        return new ResponseEntity<>(this.serieService.importFromMineco(), HttpStatus.OK);
+    }
+
     @CrossOrigin(origins = "http://localhost:5000")
     @GetMapping
     public ResponseEntity<Page<Serie>> findAll(Integer page, Integer pageSize, String keyword, String fuente, String periodicidad, String territorio, String tasa){
