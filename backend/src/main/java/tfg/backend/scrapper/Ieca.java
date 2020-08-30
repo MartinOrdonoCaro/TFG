@@ -1,20 +1,20 @@
 package tfg.backend.scrapper;
 
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import tfg.backend.domain.Dato;
 import tfg.backend.domain.Serie;
 import tfg.backend.exception.ScrapperException;
-import tfg.backend.utils.JsonReader;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class Ieca {
 
     public static List<Serie> importFromCesta() throws Exception {
@@ -24,9 +24,9 @@ public class Ieca {
         InputStream is = new FileInputStream(initialFile);
         JSONTokener tokener = new JSONTokener(is);
         JSONArray cesta = new JSONArray(tokener);
-        int i;
-        for(i = 0; i < cesta.length(); i++){
+        for (int i = 0; i < cesta.length(); i++) {
             try{
+                serie = new Serie();
                 JSONObject serieJson =  cesta.getJSONObject(i);
 
                 String codigo = serieJson.getString("codigo");
@@ -35,7 +35,7 @@ public class Ieca {
                 Integer tipoPeriodo = serieData.getJSONObject("periodos").getInt("tipo");
                 String numPeriodos = tipoPeriodo.equals(2) ? "-1" : "24";
 
-                JSONArray datosSerie = JsonReader.extractJson(
+                JSONArray datosSerie = extractJson(
                         new URL("https://ws089.juntadeandalucia.es/indea-gestion/restServices/datosSerie?" +
                                 "tipoPeriodo=" + tipoPeriodo +
                                 "&codIndicador=" + codigo +
@@ -76,13 +76,28 @@ public class Ieca {
                 serie.setDatos(valores);
 
                 series.add(serie);
-                break;
-
-            } catch (Exception e) {
-                throw new ScrapperException("scrapper.ieca.exception", new String[] { serie.getCodigo(), Integer.toString(series.size()) });
+            } catch (Exception cause) {
+                throw new ScrapperException("scrapper.ieca.exception",
+                        new String[] { serie.getCodigo(), Integer.toString(series.size()) },
+                        cause);
             }
         }
-
+        log.info("Scrapper IECA finalizado, "+series.size() +" series obtenidas.");
         return series;
+    }
+
+    private static JSONArray extractJson(URL url) throws Exception {
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(conn.getInputStream()));
+        String inputLine;
+        StringBuilder response = new StringBuilder();
+        while ((inputLine = in.readLine()) != null) {
+            response.append(inputLine);
+        }
+        in.close();
+        return new JSONArray(response.toString());
     }
 }

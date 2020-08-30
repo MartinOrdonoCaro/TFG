@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.core.env.Environment;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +21,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import tfg.backend.exception.DuplicateSerieException;
+import tfg.backend.exception.ScrapperException;
 import tfg.backend.exception.SerieNotFoundException;
 import tfg.backend.utils.ExceptionUtils;
 
@@ -56,6 +56,12 @@ public class ControllerAdviser extends ResponseEntityExceptionHandler {
   public ResponseEntity<ExceptionResponse> handleCategoriaNotFoundException(
           SerieNotFoundException ex, WebRequest request) {
     return buildExceptionResponse(HttpStatus.NOT_FOUND, ex);
+  }
+
+  @ExceptionHandler({ ScrapperException.class})
+  public ResponseEntity<ExceptionResponse> handleScrapperException(
+          ScrapperException ex, WebRequest request) {
+    return buildExceptionResponse(HttpStatus.SERVICE_UNAVAILABLE, ex);
   }
 
   @ExceptionHandler({DuplicateSerieException.class})

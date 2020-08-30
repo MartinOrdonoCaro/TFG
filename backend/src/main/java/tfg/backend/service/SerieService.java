@@ -1,5 +1,6 @@
 package tfg.backend.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Example;
@@ -18,8 +19,10 @@ import tfg.backend.scrapper.Mineco;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class SerieService {
 
@@ -91,15 +94,29 @@ public class SerieService {
 
     public String importFromMineco() throws IOException {
         List<Serie> series = Mineco.importSeries();
-        series.forEach(this::save);
+        series.forEach(serie -> {
+            try {
+                this.save(serie);
+            } catch (DuplicateSerieException ex) {
+                log.error(ex.getMessage());
+            }
+        });
 
         return "Se han insertado "+series.size()+" series";
     }
 
     public String importFromCesta() throws Exception {
         List<Serie> series = Ieca.importFromCesta();
-        series.forEach(this::save);
+        AtomicInteger err = new AtomicInteger();
+        series.forEach(serie -> {
+            try {
+                this.save(serie);
+            } catch (DuplicateSerieException ex) {
+                log.error(ex.getMessage());
+                err.getAndIncrement();
+            }
+        });
 
-        return "Se han insertado "+series.size()+" series";
+        return "Se han insertado "+ (series.size()- err.get()) +" series, "+ err +" errores";
     }
 }
