@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import tfg.backend.domain.Dato;
 import tfg.backend.domain.Serie;
+import tfg.backend.exception.ScrapperException;
 import tfg.backend.utils.JsonReader;
 
 import java.io.File;
@@ -18,6 +19,7 @@ public class Ieca {
 
     public static List<Serie> importFromCesta() throws Exception {
         List<Serie> series = new ArrayList<>();
+        Serie serie = new Serie();
         File initialFile = new File("src\\main\\java\\tfg\\backend\\resources\\cesta.json");
         InputStream is = new FileInputStream(initialFile);
         JSONTokener tokener = new JSONTokener(is);
@@ -41,7 +43,6 @@ public class Ieca {
                                 "&numPeriodos=" + numPeriodos +
                                 "&iniPeriodo=null&finPeriodo=null"));
 
-                Serie serie = new Serie();
                 serie.setCodigo(codigo);
                 serie.setTasa(serieData.getJSONObject("indicador").isNull("tasa") ? null : serieData.getJSONObject("indicador").getJSONObject("tasa").getString("descripcion"));
                 serie.setUnidad(serieData.getJSONObject("indicador").isNull("tasa") ? null : serieData.getJSONObject("indicador").getJSONObject("tasa").getJSONObject("unmEscDefecto").getJSONObject("unidad").getString("unm_descripcion"));
@@ -50,6 +51,7 @@ public class Ieca {
                 serie.setSiglasFuente(serieData.getJSONObject("fuente").getJSONObject("fte_id_organismo").isNull("org_siglas") ? null : serieData.getJSONObject("fuente").getJSONObject("fte_id_organismo").getString("org_siglas"));
                 serie.setTerritorio(serieData.getJSONObject("territorio").getString("ter_descripcion"));
                 serie.setPeriodicidad(serieJson.getJSONObject("periodicidad").getString("per_descripcion"));
+                serie.setOrigen("IECA");
 
                 if(serie.getTasa() == null){
                     JSONObject unidad = serieData.isNull("unidad") ? serieData.getJSONObject("unidadEscala") : serieData.getJSONObject("unidad");
@@ -73,11 +75,11 @@ public class Ieca {
                 }
                 serie.setDatos(valores);
 
-                System.out.println("guardando serie "+i);
                 series.add(serie);
+                break;
 
             } catch (Exception e) {
-                System.out.println(e.getMessage());
+                throw new ScrapperException("scrapper.ieca.exception", new String[] { serie.getCodigo(), Integer.toString(series.size()) });
             }
         }
 

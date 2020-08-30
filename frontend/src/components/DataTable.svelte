@@ -35,12 +35,13 @@
 		fuente: "",
 		periodicidad: "",
 		territorio: "",
-		tasa: ""
+		origen: "",
 	};
 	const filterOptions = {
 		territorio: [],
 		periodicidad: [],
-		fuente: []
+		fuente: [],
+		origen: []
 	}
 
 	onMount(() => {
@@ -50,6 +51,7 @@
 						filterOptions.territorio = jsonData.territorios;
 						filterOptions.periodicidad = jsonData.periodos;
 						filterOptions.fuente = jsonData.fuentes;
+						filterOptions.origen = jsonData.origenes;
 					});
 	});
 	beforeUpdate(() => {
@@ -60,7 +62,6 @@
 			var urlSearch = new URLSearchParams(params);
 			urlSearch.append("page", page);
 			url.search = urlSearch.toString();
-			console.log(url);
 			fetch(url)
 					.then(response => response.json())
 					.then(jsonData => {	
@@ -132,49 +133,64 @@
 <Paper>
 	<Title>Listado de series</Title>
 	
-	<Content>
-		<Textfield variant="filled" bind:value={params.keyword} label="Palabra clave" />
-		
-		<Select variant="filled" enhanced bind:value={params.fuente} label="Fuente" class="demo-select-width" menu$class="demo-select-width">
+		<div class="columns margins" style="justify-content: flex-start;" >
+		<div>
+		<Textfield bind:value={params.keyword} label="Palabra clave" />
+		</div>
+
+		<div>
+		<Select variant="filled" enhanced bind:value={params.origen} label="Origen">
+			<Option value=""></Option>
+			{#each filterOptions.origen as origen}
+				<Option value={origen} selected={params.origen === origen}>{origen}</Option>
+			{/each}
+		</Select>
+		</div>
+
+		<div>
+		<Select variant="filled" enhanced bind:value={params.fuente} label="Fuente">
 			<Option value=""></Option>
 			{#each filterOptions.fuente as fuente}
 				<Option value={fuente} selected={params.fuente === fuente}>{fuente}</Option>
 			{/each}
 		</Select>
+		</div>
 
-		<Select variant="filled" enhanced bind:value={params.periodicidad} label="Periodicidad" class="demo-select-width" menu$class="demo-select-width">
+		<div>
+		<Select variant="filled" enhanced bind:value={params.periodicidad} label="Periodicidad">
 			<Option value=""></Option>
 			{#each filterOptions.periodicidad as periodo}
 				<Option value={periodo} selected={() => params.periodicidad === periodo}>{periodo}</Option>
 			{/each}
 		</Select>
+		</div>
 
-		<Select variant="filled" enhanced bind:value={params.territorio} label="Territorio" class="demo-select-width" menu$class="demo-select-width">
+		<div>
+		<Select variant="filled" enhanced bind:value={params.territorio} label="Territorio">
 			<Option value=""></Option>
 			{#each filterOptions.territorio as territorio}
 				<Option value={territorio} selected={params.territorio === territorio}>{territorio}</Option>
 			{/each}
 		</Select>
+		</div>
 		
-		<Button variant="filled" on:click={() => handleFilter()} >
+		<Button variant="outlined" on:click={() => handleFilter()} >
 			Filtrar
 		</Button>
-	</Content>
+		</div>
 
-	<br>
-
-	<Content>
-		<DataTable table$aria-label="Series" style="width: 100%">
+	<div class="table">
+		<DataTable table$aria-label="Series">
 			<Head>
 				<Row>
-					<Cell>Código</Cell>
-					<Cell>Descripción</Cell>
-					<Cell>Fuente</Cell>
-					<Cell>Nº de Datos</Cell>
-					<Cell>Periodicidad</Cell>
-					<Cell>Tasa (unidad)</Cell>
-					<Cell>Territorio</Cell>
-					<Cell>Selección</Cell>
+					<Cell><strong>Código</strong></Cell>
+					<Cell><strong>Descripción</strong></Cell>
+					<Cell><strong>Fuente</strong></Cell>
+					<Cell><strong>Nº de Datos</strong></Cell>
+					<Cell><strong>Periodicidad</strong></Cell>
+					<Cell><strong>Datos</strong></Cell>
+					<Cell><strong>Territorio</strong></Cell>
+					<Cell><strong>Selección</strong></Cell>
 				</Row>
 			</Head>
 			<Body>
@@ -182,9 +198,13 @@
 					{#each series as serie, i (i)}
 						<Row>
 							<Cell>{serie.codigo}</Cell>
-							<Cell>{serie.descripcion}</Cell>
+							<Cell>{serie.descripcion.toLowerCase()}</Cell>
 
-							<Cell>{serie.nombreFuente} ({serie.siglasFuente})</Cell>
+							{#if serie.nombreFuente}
+								<Cell>{serie.nombreFuente} ({serie.siglasFuente})</Cell>
+							{:else}
+								<Cell>{serie.siglasFuente}</Cell>
+							{/if}
 
 							{#if serie.datos}
 								<Cell>{serie.datos.length}</Cell>
@@ -193,7 +213,13 @@
 							{/if}
 
 							<Cell>{serie.periodicidad}</Cell>
-							<Cell>{serie.tasa} ({serie.unidad})</Cell>
+
+							{#if serie.tasa}
+								<Cell>{serie.tasa} ({serie.unidad.toLowerCase()})</Cell>
+							{:else}
+								<Cell>{serie.unidad.toLowerCase()}</Cell>
+							{/if}
+
 							<Cell>{serie.territorio}</Cell>
 
 							<Cell checkbox>
@@ -208,9 +234,8 @@
 				{/if}
 			</Body>
 		</DataTable>
-	</Content>
-	<br>
-	<Content>
+	</div>
+	<div class="margins">
 		<Select enhanced bind:value={params.pageSize} label="Numero de series">
   			{#each sizes as size}
    				<Option value={size} selected={params.pageSize === size} on:click={() => handlePageSize(size)}>{size}</Option>
@@ -233,10 +258,9 @@
 		<Button variant="raised" on:click={() => handlePage(totalPages-1-page)} disabled={totalPages-1 <= page}>
 			&#187
 		</Button>
-	</Content>
-	<br>
+	</div>
 
-	<Content>
+	<div class="margins">
 	
 	<Button variant="raised" on:click={() => excel = true} disabled={selected.length < 1 }>
 		Ver datos en Excel
@@ -245,18 +269,16 @@
 	<Button variant="raised" on:click={() => grafica = true} disabled={selected.length < 1 }>
 		Ver datos en Gráfica
 	</Button>
-	</Content>
+	</div>
 
-	<br>
-
-	<Content>
+	<div class="margins">
 
 
 	<Set chips={selected} let:chip input>
   		<Chip><Text>{chip.codigo}</Text></Chip>
 	</Set>
 
-	</Content>
+	</div>
 	
 </Paper>
 
@@ -276,3 +298,20 @@
 	</Button>
 </Paper>
 {/if}
+
+<style>
+  .margins {
+    margin: 18px 0 24px;
+  }
+  .columns {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+  .columns > * {
+    margin-left: 12px;
+  }
+  .columns > *:first-child {
+    margin-left: 0;
+  }
+</style>

@@ -19,4 +19,5 @@ public class Filtro implements Serializable {
     private List<String> territorios;
     private List<String> fuentes;
     private List<String> periodos;
+    private List<String> origenes;
 }

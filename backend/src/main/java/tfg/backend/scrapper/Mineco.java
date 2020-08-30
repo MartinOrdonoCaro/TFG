@@ -87,7 +87,7 @@ public class Mineco {
                     for(String item:datosString) {
                         Dato dato = new Dato();
                         dato.setAnio(anioActual.toString());
-                        dato.setPeriodo(periodicidad);
+                        dato.setPeriodo(periodicidad.substring(0, 1) + periodoActual);
                         dato.setValor(isNumeric(item) ? Float.valueOf(item.trim()) : null);
                         datos.add(dato);
                         periodoActual++;
@@ -104,6 +104,7 @@ public class Mineco {
                     serie.setCodigo(codigo);
                     serie.setUnidad(unidad);
                     serie.setDatos(datos);
+                    serie.setOrigen("MINECO");
                     series.add(serie);
                     numSeries++;
 
@@ -116,13 +117,11 @@ public class Mineco {
                 }
             }
             zis.closeEntry();
-            zis.close();
             return series;
 
         } catch (Exception e) {
             return series;
         } finally {
-            zis.closeEntry();
             zis.close();
         }
     }

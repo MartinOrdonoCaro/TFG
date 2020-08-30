@@ -23,7 +23,6 @@
 						result.valores.push(valor);
 					} else {
 						let valores = [];
-						console.log(selected.indexOf(serie));
 						for (var n = 0; n < selected.indexOf(serie); n++) {
 							valores.push("-");
 						}

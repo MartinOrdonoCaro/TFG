@@ -22,11 +22,11 @@ public class SerieController {
 
     @PostMapping
     public ResponseEntity<Serie> create(@RequestBody Serie serie){
-        return new ResponseEntity<>(serieService.create(serie), HttpStatus.CREATED);
+        return new ResponseEntity<>(serieService.save(serie), HttpStatus.CREATED);
     }
 
     @PostMapping("/import")
-    public ResponseEntity<String> importFromUrl(@RequestBody String url) throws Exception {
+    public ResponseEntity<String> importFromUrl() throws Exception {
         return new ResponseEntity<>(serieService.importFromCesta(), HttpStatus.OK);
     }
 
@@ -35,26 +35,23 @@ public class SerieController {
         return new ResponseEntity<>(this.serieService.importFromMineco(), HttpStatus.OK);
     }
 
-    @CrossOrigin(origins = "http://localhost:5000")
     @GetMapping
-    public ResponseEntity<Page<Serie>> findAll(Integer page, Integer pageSize, String keyword, String fuente, String periodicidad, String territorio, String tasa){
+    public ResponseEntity<Page<Serie>> findAll(Integer page, Integer pageSize, String keyword, String fuente,
+                                               String periodicidad, String territorio, String origen){
         Pageable pageable = PageRequest.of(page, pageSize);
-        return ResponseEntity.ok(serieService.findAll(pageable, keyword, fuente, periodicidad, territorio, tasa));
+        return ResponseEntity.ok(serieService.findAll(pageable, keyword, fuente, periodicidad, territorio, origen));
     }
 
-    @CrossOrigin(origins = "http://localhost:5000")
     @GetMapping("/{id}")
     public Serie findById(@PathVariable Long id){
         return serieService.findById(id);
     }
 
-    @CrossOrigin(origins = "http://localhost:5000")
     @GetMapping("/find-all-by-id")
     public ResponseEntity<List<Serie>> findAllById(@RequestParam List<Long> ids){
         return ResponseEntity.ok(serieService.findAllById(ids));
     }
 
-    @CrossOrigin(origins = "http://localhost:5000")
     @GetMapping("/filtro")
     public ResponseEntity<Filtro> getFiltro(){
         return ResponseEntity.ok(serieService.getFiltro());
